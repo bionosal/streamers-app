@@ -6,14 +6,14 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StreamerDto, VoteEnumDto } from './dto';
 import { Prisma } from '@prisma/client';
+import { GatewayService } from 'src/gateway/gateway.service';
 
 @Injectable()
 export class StreamerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private gateway: GatewayService) {}
 
   async getStreamers() {
     const streamers = await this.prisma.streamer.findMany();
-
     return streamers;
   }
 
@@ -36,7 +36,7 @@ export class StreamerService {
           ...dto,
         },
       });
-
+      this.gateway.server.emit('onNewStreamer', streamer);
       return streamer;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -60,7 +60,7 @@ export class StreamerService {
           },
         },
       });
-
+      this.gateway.server.emit('onStreamerVote', streamer);
       return streamer;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {

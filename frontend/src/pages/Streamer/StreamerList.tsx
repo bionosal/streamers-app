@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useContext, useEffect, useState } from "react";
 import { KeyedMutator } from "swr";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -6,6 +6,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import {
   Avatar,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -24,6 +25,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
 import { useStreamers } from "../../hooks/streamer";
 import { Streamer } from "../../types";
@@ -31,18 +34,42 @@ import styles from "./StreamerList.module.scss";
 import { API_URL } from "../../config";
 import { jsonFetcher } from "../../utils";
 import toast from "react-hot-toast";
+import { WebsocketContext } from "../../contexts";
 
 export function StreamerList() {
-  const { streamers = [], isLoading, isError, mutate } = useStreamers();
+  // const { streamers = [], isLoading, isError, mutate } = useStreamers();
+  const [streamers, setStreamers] = useState<Streamer[]>([]);
+  const socket = useContext(WebsocketContext);
 
+  useEffect(() => {
+    jsonFetcher<Streamer[]>(`${API_URL}/streamers`).then((json) =>
+      setStreamers([...json])
+    );
+    socket.on("connect", () => {
+      console.log("Connected!");
+    });
+    socket.on("onNewStreamer", (newStreamer: Streamer) => {
+      setStreamers((prevState) => [...prevState, newStreamer]);
+    });
+    socket.on("onStreamerVote", (updatedStreamer: Streamer) => {
+      setStreamers((prevState) => [
+        ...prevState.map((streamer) =>
+          streamer.id === updatedStreamer.id ? updatedStreamer : streamer
+        ),
+      ]);
+    });
+
+    return () => {
+      console.log("Unregister Events...");
+      socket.off("connect");
+      socket.off("onNewStreamer");
+      socket.off("onStreamerVote");
+    };
+  }, []);
   return (
     <div className={styles.container}>
-      <StreamerTable
-        streamers={streamers}
-        isLoading={isLoading}
-        isError={isError}
-      />
-      <StreamerForm mutate={mutate} />
+      <StreamerTable streamers={streamers} isLoading={false} isError={false} />
+      <StreamerForm />
     </div>
   );
 }
@@ -62,37 +89,69 @@ function StreamerTable({ streamers, isLoading, isError }: StreamerTableProps) {
     return <div className={styles.streamerTable}>Unknown Error occured</div>;
   }
 
+  const handleVote = (id: number, vote: "upvote" | "downvote") => {
+    jsonFetcher(`${API_URL}/streamers/${id}/vote`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ vote: vote }),
+    })
+      .then(() => {
+        toast.success("Vote has been added");
+      })
+      .catch((err: Error) => toast.error(err.message));
+  };
+
   return (
     <div className={styles.streamerTable}>
       <Typography variant="h4" component="h6" color={"black"} align="left">
         Streamers Table
       </Typography>
-
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell align="right">Platform</TableCell>
-            <TableCell align="right">Upvotes</TableCell>
-            <TableCell align="right">Downvotes</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {streamers.map((streamer) => (
-            <TableRow key={streamer.id}>
-              <TableCell align="right">
-                <div className={styles.avatarCell}>
-                  <Avatar src={streamer.avatar} />
-                  <a href={`/streamers/${streamer.id}`}>{streamer.name}</a>
-                </div>
-              </TableCell>
-              <TableCell align="right">{streamer.platform}</TableCell>
-              <TableCell align="right">{streamer.upvote}</TableCell>
-              <TableCell align="right">{streamer.downvote}</TableCell>
+      <div className={styles.tableContainer}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell align="right">Platform</TableCell>
+              <TableCell align="right">Upvotes</TableCell>
+              <TableCell align="right">Downvotes</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+        </Table>
+        <div className={styles.tableRowsContainer}>
+          <Table size="small">
+            <TableBody>
+              {streamers.map((streamer) => (
+                <TableRow key={streamer.id}>
+                  <TableCell align="right">
+                    <div className={styles.avatarCell}>
+                      <Avatar src={streamer.avatar} />
+                      <a href={`/streamers/${streamer.id}`}>{streamer.name}</a>
+                    </div>
+                  </TableCell>
+                  <TableCell align="right">{streamer.platform}</TableCell>
+                  <TableCell align="right">
+                    {" "}
+                    <Chip
+                      icon={<ThumbUpIcon />}
+                      label={streamer.upvote}
+                      onClick={() => handleVote(streamer.id, "upvote")}
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Chip
+                      icon={<ThumbDownIcon />}
+                      label={streamer.downvote}
+                      onClick={() => handleVote(streamer.id, "downvote")}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 }
@@ -104,10 +163,6 @@ type StreamerFormData = {
   avatar: string;
 };
 
-type StreamerFormProps = {
-  mutate: KeyedMutator<Streamer[]>;
-};
-
 const defaultFormData: StreamerFormData = {
   name: "",
   platform: "",
@@ -115,7 +170,7 @@ const defaultFormData: StreamerFormData = {
   avatar: "",
 };
 
-function StreamerForm({ mutate }: StreamerFormProps) {
+function StreamerForm() {
   const [formData, setFormData] = useState<StreamerFormData>(defaultFormData);
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [open, setOpen] = React.useState(false);
@@ -143,7 +198,6 @@ function StreamerForm({ mutate }: StreamerFormProps) {
     })
       .then(() => {
         toast.success("Streamer has been added");
-        mutate();
         setFormData({ ...defaultFormData });
       })
       .catch((err: Error) => toast.error(err.message));
