@@ -14,11 +14,15 @@ export class StreamerService {
   constructor(private prisma: PrismaService, private gateway: GatewayService) {}
 
   async getStreamers() {
+    // Retrieve all streamers from the database
+
     const streamers = await this.prisma.streamer.findMany();
     return streamers;
   }
 
   async getStreamer(id: number) {
+    // Retrieve a specific streamer by ID from the database
+
     const streamer = await this.prisma.streamer.findUnique({
       where: {
         id: id,
@@ -31,6 +35,8 @@ export class StreamerService {
   }
 
   async postStreamer(dto: StreamerDto) {
+    // Create a new streamer in the database
+
     try {
       const streamer = await this.prisma.streamer.create({
         data: {
@@ -50,6 +56,8 @@ export class StreamerService {
   }
 
   async voteStreamer(id: number, vote: VoteEnumDto) {
+    // Vote for a specific streamer
+
     try {
       const streamer = await this.prisma.streamer.update({
         where: {

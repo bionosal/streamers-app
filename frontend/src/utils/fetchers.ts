@@ -1,3 +1,11 @@
+/**
+ * Async function for making JSON API requests and parsing the response.
+ *
+ * @param {RequestInfo} resource - The URL or resource to fetch data from.
+ * @param {RequestInit} init - The optional request initialization options.
+ * @returns {Promise<T>} A promise that resolves to the parsed JSON response.
+ * @throws {Error} If the request fails or if the response cannot be parsed as JSON.
+ */
 export async function jsonFetcher<T>(
   resource: RequestInfo,
   init?: RequestInit

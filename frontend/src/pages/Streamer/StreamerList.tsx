@@ -34,6 +34,12 @@ import styles from "./StreamerList.module.scss";
 import { Streamer } from "../../types";
 import { jsonFetcher } from "../../utils";
 
+/**
+ * Component for displaying a list of streamers and a form to add new streamers.
+ * Uses the `WebsocketContext` to listen for socket events related to streamers.
+ *
+ * @returns {JSX.Element} The rendered StreamerList component
+ */
 export function StreamerList() {
   const [streamers, setStreamers] = useState<Streamer[]>([]);
   const socket = useContext(WebsocketContext);
@@ -75,6 +81,12 @@ type StreamerTableProps = {
   streamers: Streamer[];
 };
 
+/**
+ * Component for rendering the table of streamers.
+ *
+ * @param {StreamerTableProps} streamers - The list of streamers to display in the table
+ * @returns {JSX.Element} The rendered StreamerTable component
+ */
 function StreamerTable({ streamers }: StreamerTableProps) {
   const handleVote = (id: number, vote: "upvote" | "downvote") => {
     jsonFetcher(`${API_URL}/streamers/${id}/vote`, {
@@ -156,6 +168,17 @@ const defaultFormData: StreamerFormData = {
   description: "",
   avatar: "",
 };
+/**
+ * Component for rendering a form to add a streamer.
+ *
+ * This component provides a user interface for adding streamer information,
+ * including the streamer's name, platform, avatar image, and description.
+ * It validates the input data and sends a POST request to the server to add the streamer.
+ * If the form is successfully submitted, a success message is displayed and the form is reset.
+ * Otherwise, an error message is shown.
+ *
+ * @returns {JSX.Element} The rendered StreamerForm component
+ */
 
 function StreamerForm() {
   const [formData, setFormData] = useState<StreamerFormData>(defaultFormData);

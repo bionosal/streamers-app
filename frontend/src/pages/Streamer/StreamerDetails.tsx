@@ -5,6 +5,11 @@ import { Avatar } from "@mui/material";
 import { useStreamer } from "../../hooks/streamer";
 import styles from "./StreamerDetails.module.scss";
 
+/**
+ * Component for displaying the details of a specific streamer.
+ *
+ * @returns {JSX.Element} The rendered StreamerDetails component
+ */
 export function StreamerDetails() {
   const { id } = useParams();
   const { streamer, isLoading, isError } = useStreamer(Number(id));

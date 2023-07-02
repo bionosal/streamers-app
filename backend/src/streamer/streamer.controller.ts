@@ -18,16 +18,22 @@ export class StreamerController {
 
   @Get()
   getStreamers() {
+    // Get all streamers
+
     return this.streamerService.getStreamers();
   }
 
   @Get(':id')
   getStreamer(@Param('id', ParseIntPipe) id: number) {
+    // Get a specific streamer by ID
+
     return this.streamerService.getStreamer(id);
   }
 
   @Post()
   postStreamer(@Body() dto: StreamerDto) {
+    // Create a new streamer
+
     return this.streamerService.postStreamer(dto);
   }
 
@@ -36,6 +42,8 @@ export class StreamerController {
     @Param('id', ParseIntPipe) id: number,
     @Body('vote', new ParseEnumPipe(VoteEnumDto)) vote: VoteEnumDto,
   ) {
+    // Vote for a specific streamer
+
     return this.streamerService.voteStreamer(id, vote);
   }
 }
