@@ -172,6 +172,7 @@ const defaultFormData: StreamerFormData = {
 
 function StreamerForm() {
   const [formData, setFormData] = useState<StreamerFormData>(defaultFormData);
+  const [isValidateError, setIsValidateError] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [open, setOpen] = React.useState(false);
 
@@ -189,18 +190,29 @@ function StreamerForm() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    jsonFetcher(`${API_URL}/streamers/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    })
-      .then(() => {
-        toast.success("Streamer has been added");
-        setFormData({ ...defaultFormData });
+    if (
+      formData.name.length > 0 &&
+      formData.description.length > 0 &&
+      formData.avatar.length > 0 &&
+      formData.platform.length > 0
+    ) {
+      jsonFetcher(`${API_URL}/streamers/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       })
-      .catch((err: Error) => toast.error(err.message));
+        .then(() => {
+          toast.success("Streamer has been added");
+          setFormData({ ...defaultFormData });
+          setIsValidateError(false);
+        })
+        .catch((err: Error) => toast.error(err.message));
+    } else {
+      setIsValidateError(true);
+      toast.error("Invalid streamer data");
+    }
   };
 
   return (
@@ -211,6 +223,7 @@ function StreamerForm() {
       <form onSubmit={handleSubmit}>
         <div className={styles.streamerInfo}>
           <TextField
+            error={isValidateError && formData.name.length === 0}
             value={formData.name}
             label="Name"
             name="name"
@@ -219,6 +232,7 @@ function StreamerForm() {
           <FormControl>
             <InputLabel id="platform">Platform</InputLabel>
             <Select
+              error={isValidateError && formData.platform.length === 0}
               value={formData.platform}
               onChange={(event) => handleChange("platform", event.target.value)}
               name="platform"
@@ -234,6 +248,11 @@ function StreamerForm() {
             </Select>
           </FormControl>
           <Button
+            color={
+              isValidateError && formData.avatar.length === 0
+                ? "error"
+                : undefined
+            }
             variant="outlined"
             onClick={handleOpen}
             endIcon={<AccountCircleIcon />}
@@ -289,6 +308,7 @@ function StreamerForm() {
           <Avatar src={formData.avatar} className={styles.streamerAvatar} />
         </div>
         <TextField
+          error={isValidateError && formData.name.length === 0}
           value={formData.description}
           className={styles.streamerDescription}
           label="Description"
