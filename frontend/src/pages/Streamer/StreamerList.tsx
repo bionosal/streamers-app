@@ -1,5 +1,5 @@
-import React, { FormEvent, useContext, useEffect, useState } from "react";
-import { KeyedMutator } from "swr";
+import { FormEvent, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -28,23 +28,20 @@ import {
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
-import { useStreamers } from "../../hooks/streamer";
-import { Streamer } from "../../types";
-import styles from "./StreamerList.module.scss";
 import { API_URL } from "../../config";
-import { jsonFetcher } from "../../utils";
-import toast from "react-hot-toast";
 import { WebsocketContext } from "../../contexts";
+import styles from "./StreamerList.module.scss";
+import { Streamer } from "../../types";
+import { jsonFetcher } from "../../utils";
 
 export function StreamerList() {
-  // const { streamers = [], isLoading, isError, mutate } = useStreamers();
   const [streamers, setStreamers] = useState<Streamer[]>([]);
   const socket = useContext(WebsocketContext);
 
   useEffect(() => {
-    jsonFetcher<Streamer[]>(`${API_URL}/streamers`).then((json) =>
-      setStreamers([...json])
-    );
+    jsonFetcher<Streamer[]>(`${API_URL}/streamers`)
+      .then((json) => setStreamers([...json]))
+      .catch((err: Error) => toast.error(err.message));
     socket.on("connect", () => {
       console.log("Connected!");
     });
@@ -68,7 +65,7 @@ export function StreamerList() {
   }, []);
   return (
     <div className={styles.container}>
-      <StreamerTable streamers={streamers} isLoading={false} isError={false} />
+      <StreamerTable streamers={streamers} />
       <StreamerForm />
     </div>
   );
@@ -76,19 +73,9 @@ export function StreamerList() {
 
 type StreamerTableProps = {
   streamers: Streamer[];
-  isLoading: boolean;
-  isError: any;
 };
 
-function StreamerTable({ streamers, isLoading, isError }: StreamerTableProps) {
-  if (isLoading) return <div className={styles.streamerTable}>loading ...</div>;
-  if (isError) {
-    if (isError.message) {
-      return <div className={styles.streamerTable}>{isError.message}</div>;
-    }
-    return <div className={styles.streamerTable}>Unknown Error occured</div>;
-  }
-
+function StreamerTable({ streamers }: StreamerTableProps) {
   const handleVote = (id: number, vote: "upvote" | "downvote") => {
     jsonFetcher(`${API_URL}/streamers/${id}/vote`, {
       method: "PUT",
@@ -174,7 +161,7 @@ function StreamerForm() {
   const [formData, setFormData] = useState<StreamerFormData>(defaultFormData);
   const [isValidateError, setIsValidateError] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>("");
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
     setOpen(true);

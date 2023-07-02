@@ -1,10 +1,12 @@
-import React from "react";
-import styles from "./MainLayout.module.scss";
-import { Outlet } from "react-router-dom";
-import { NavBar } from "../NavBar";
-import { IconButton } from "@mui/material";
 import toast, { Toaster, ToastBar } from "react-hot-toast";
+import { Outlet } from "react-router-dom";
+
 import CloseIcon from "@mui/icons-material/Close";
+import { IconButton } from "@mui/material";
+
+import styles from "./MainLayout.module.scss";
+import { NavBar } from "../NavBar";
+
 export function MainLayout() {
   return (
     <div className={styles.layout}>

@@ -3,10 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+
+import { GatewayService } from 'src/gateway/gateway.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StreamerDto, VoteEnumDto } from './dto';
-import { Prisma } from '@prisma/client';
-import { GatewayService } from 'src/gateway/gateway.service';
 
 @Injectable()
 export class StreamerService {

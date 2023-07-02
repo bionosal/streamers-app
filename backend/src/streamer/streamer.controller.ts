@@ -8,8 +8,9 @@ import {
   ParseEnumPipe,
   Put,
 } from '@nestjs/common';
-import { StreamerService } from './streamer.service';
+
 import { StreamerDto, VoteEnumDto } from './dto';
+import { StreamerService } from './streamer.service';
 
 @Controller('streamers')
 export class StreamerController {

@@ -1,10 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import {
-  MessageBody,
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
 import { Server } from 'socket.io';
+
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
