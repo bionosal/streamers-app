@@ -1,0 +1,63 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  height: 100%;
+}
+
+.streamerTable {
+  background-color: white;
+  flex-grow: 1;
+  padding: 1rem;
+}
+
+.avatarCell {
+  display: flex;
+  gap: 10px;
+}
+
+.avatarCell > * {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.streamerForm {
+  padding: 1rem;
+  background-color: white;
+  height: fit-content;
+}
+
+.streamerForm > form {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 15rem 15rem;
+}
+.streamerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.streamerAvatarContainer {
+  position: relative;
+}
+
+.streamerAvatarContainer > button {
+  position: absolute;
+  z-index: 9999;
+  top: 0;
+  right: 0;
+  padding: 0;
+}
+.streamerAvatar {
+  width: 15rem !important;
+  height: 15rem !important;
+}
+
+.streamerDescription {
+  grid-column: span 2;
+}
+
+.streamerSubmit {
+  grid-column: span 2;
+}
